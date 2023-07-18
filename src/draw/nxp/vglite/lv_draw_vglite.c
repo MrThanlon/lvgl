@@ -32,9 +32,13 @@
  *********************/
 
 #include "lv_draw_vglite.h"
+#include "lv_draw_sw.h"
+#include <stdbool.h>
+#include <sys/time.h>
 
 #if LV_USE_GPU_NXP_VG_LITE
 #include <math.h>
+#include <stdio.h>
 #include "lv_draw_vglite_blend.h"
 #include "lv_draw_vglite_line.h"
 #include "lv_draw_vglite_rect.h"
@@ -95,6 +99,21 @@ static void lv_draw_vglite_arc(lv_draw_ctx_t * draw_ctx, const lv_draw_arc_dsc_t
  *      MACROS
  **********************/
 
+static struct timeval tv_last;
+#define tvdelta(tv1,tv2) ((tv2.tv_sec-tv1.tv_sec)*1000000+tv2.tv_usec-tv1.tv_usec)
+
+#define dbg(fmt,...) do{\
+    struct timeval tv;\
+    gettimeofday(&tv,NULL);\
+    unsigned usec=(tv.tv_sec-tv_last.tv_sec)*1000000+tv.tv_usec-tv_last.tv_usec;\
+    tv_last=tv;\
+    fprintf(stderr,"cost: %u.%06u\n",usec/1000000,usec%1000000);\
+    fprintf(stderr,"%s "fmt" ",__func__,##__VA_ARGS__);\
+    }while(0)
+
+#undef dbg
+#define dbg(...)
+
 /**********************
  *   GLOBAL FUNCTIONS
  **********************/
@@ -105,7 +124,7 @@ void lv_draw_vglite_ctx_init(lv_disp_drv_t * drv, lv_draw_ctx_t * draw_ctx)
 
     lv_draw_vglite_ctx_t * vglite_draw_ctx = (lv_draw_sw_ctx_t *)draw_ctx;
     vglite_draw_ctx->base_draw.init_buf = lv_draw_vglite_init_buf;
-    vglite_draw_ctx->base_draw.draw_line = lv_draw_vglite_line;
+    vglite_draw_ctx->base_draw.draw_line = lv_draw_sw_line;
     vglite_draw_ctx->base_draw.draw_arc = lv_draw_vglite_arc;
     vglite_draw_ctx->base_draw.draw_rect = lv_draw_vglite_rect;
     vglite_draw_ctx->base_draw.draw_img_decoded = lv_draw_vglite_img_decoded;
@@ -145,14 +164,28 @@ static inline bool need_argb8565_support()
 
 static void lv_draw_vglite_init_buf(lv_draw_ctx_t * draw_ctx)
 {
+    dbg("draw_ctx->buf(%p)", draw_ctx->buf);
     lv_gpu_nxp_vglite_init_buf(draw_ctx->buf, draw_ctx->buf_area, lv_area_get_width(draw_ctx->buf_area));
 }
 
+#define ELAPSED(x) do{\
+    struct timeval tv,tv2;\
+    gettimeofday(&tv,NULL);\
+    x;\
+    gettimeofday(&tv2,NULL);\
+    fprintf(stderr,#x" elapsed %lu us\n",(tv2.tv_sec-tv.tv_sec)*1000000+tv2.tv_usec-tv.tv_usec);\
+    }while(0)
+
 static void lv_draw_vglite_wait_for_finish(lv_draw_ctx_t * draw_ctx)
 {
-    vg_lite_finish();
-
+    //struct timeval tv, tv2, tv3;
+    //gettimeofday(&tv, NULL);
+    //vg_lite_finish();
+    //gettimeofday(&tv2, NULL);
     lv_draw_sw_wait_for_finish(draw_ctx);
+    //gettimeofday(&tv3, NULL);
+    //fprintf(stderr, "wait GPU: %lu\n", tvdelta(tv, tv2));
+    //fprintf(stderr, "wait sw: %lu\n", tvdelta(tv2, tv3));
 }
 
 static void lv_draw_vglite_blend(lv_draw_ctx_t * draw_ctx, const lv_draw_sw_blend_dsc_t * dsc)
@@ -266,6 +299,7 @@ static void lv_draw_vglite_img_decoded(lv_draw_ctx_t * draw_ctx, const lv_draw_i
 static void lv_draw_vglite_line(lv_draw_ctx_t * draw_ctx, const lv_draw_line_dsc_t * dsc, const lv_point_t * point1,
                                 const lv_point_t * point2)
 {
+    dbg("p1(%d,%d) p2(%d,%d)", point1->x, point1->y, point2->x, point2->y);
     if(dsc->width == 0)
         return;
     if(dsc->opa <= (lv_opa_t)LV_OPA_MIN)
@@ -310,6 +344,7 @@ static void lv_draw_vglite_line(lv_draw_ctx_t * draw_ctx, const lv_draw_line_dsc
 
 static void lv_draw_vglite_rect(lv_draw_ctx_t * draw_ctx, const lv_draw_rect_dsc_t * dsc, const lv_area_t * coords)
 {
+    dbg("");
     if(need_argb8565_support()) {
         lv_draw_sw_rect(draw_ctx, dsc, coords);
         return;
@@ -473,6 +508,7 @@ static lv_res_t lv_draw_vglite_outline(lv_draw_ctx_t * draw_ctx, const lv_draw_r
 static void lv_draw_vglite_arc(lv_draw_ctx_t * draw_ctx, const lv_draw_arc_dsc_t * dsc, const lv_point_t * center,
                                uint16_t radius, uint16_t start_angle, uint16_t end_angle)
 {
+    dbg("center(%d,%d) radius(%u) sa(%u) ea(%u)", center->x, center->y, radius, start_angle, end_angle);
     bool done = false;
 
 #if LV_DRAW_COMPLEX

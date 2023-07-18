@@ -32,6 +32,7 @@
  *********************/
 
 #include "lv_draw_vglite_blend.h"
+#include "lv_types.h"
 
 #if LV_USE_GPU_NXP_VG_LITE
 #include "lv_vglite_buf.h"
@@ -459,6 +460,8 @@ static lv_res_t lv_vglite_blit_split(lv_color_t * dest_buf, lv_area_t * dest_are
 
 static lv_res_t lv_vglite_blit_single(const lv_area_t * dest_area, const lv_area_t * src_area, lv_opa_t opa)
 {
+    // TODO
+    return LV_RES_INV;
     vg_lite_error_t err = VG_LITE_SUCCESS;
     vg_lite_buffer_t * dst_vgbuf = lv_vglite_get_dest_buf();
     vg_lite_buffer_t * src_vgbuf = lv_vglite_get_src_buf();

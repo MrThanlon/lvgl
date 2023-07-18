@@ -25,3 +25,7 @@ tests/report/
 .DS_Store
 .vscode
 *.bak
+.cache
+compile_commands.json
+lvgl_demo_widgets
+

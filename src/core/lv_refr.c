@@ -7,6 +7,7 @@
  *      INCLUDES
  *********************/
 #include <stddef.h>
+#include <stdio.h>
 #include "lv_refr.h"
 #include "lv_disp.h"
 #include "../hal/lv_hal_tick.h"

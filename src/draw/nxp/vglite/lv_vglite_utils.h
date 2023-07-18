@@ -43,6 +43,7 @@ extern "C" {
 #include "vg_lite.h"
 #include "../../sw/lv_draw_sw.h"
 #include "../../../misc/lv_log.h"
+#include <stdio.h>
 
 /*********************
  *      DEFINES
@@ -153,6 +154,7 @@ lv_res_t lv_vglite_run(void);
     } while (0)
 #define VG_LITE_RETURN_INV(fmt, ...)          \
     do {                                      \
+        fprintf(stderr,"%s "fmt"\n",__func__, ##__VA_ARGS__);\
         return LV_RES_INV;                    \
     }while(0)
 #endif /*LV_GPU_NXP_VG_LITE_LOG_TRACES*/

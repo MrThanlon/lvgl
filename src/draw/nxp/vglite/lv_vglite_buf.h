@@ -100,6 +100,16 @@ void lv_vglite_set_src_buf_ptr(const lv_color_t * buf);
  */
 void lv_vglite_set_src_buf(const lv_color_t * buf, const lv_area_t * area, lv_coord_t stride);
 
+/**
+ * Get vglite buffer which mapped.
+ * 
+ * @param[in] buf Buffer virtual address
+ * @param[in] area Buffer area (for width and height)
+ * @param[in] stride Stride of buffer
+ * @retval The vglite buffer, if none return NULL
+ */
+vg_lite_buffer_t* lv_vglite_get_buf_by_virt(const lv_color_t * buf, const lv_area_t * area, lv_coord_t stride);
+
 /**********************
  *      MACROS
  **********************/
