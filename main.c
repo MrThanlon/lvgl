@@ -73,6 +73,8 @@ const char* vg_lite_error_string[] = {
     gettimeofday(&tv2,NULL);\
     fprintf(stderr,#x" elapsed %lu us\n",tvdelta(tv,tv2));\
     }while(0)
+#undef ELAPSED
+#define ELAPSED(x) x
 
 #define CKE(x) do{int e=x;if(e){fprintf(stderr,"%s:%d "#x" error: %s\n",__FILE__,__LINE__,vg_lite_error_string[e]);goto error;}}while(0)
 
@@ -178,9 +180,42 @@ error:
 
 	lv_disp_flush_ready(disp_drv);
 }
-
+static unsigned quit = 1;
 static void sig_exit(int x) {
-    exit(0);
+    quit = 0;
+}
+
+static void vglite_rect(lv_draw_ctx_t * draw_ctx, const lv_draw_rect_dsc_t * dsc, const lv_area_t * coords) {
+    vg_lite_buffer_t* vgbuf = lv_vglite_get_dest_buf();
+    uint32_t path_data[] = {
+        2, coords->x1, coords->y1,
+        4, coords->x2, coords->y1,
+        4,  coords->x2, coords->y2,
+        4, coords->x1, coords->y2,
+        0
+    };
+    vg_lite_path_t path = {
+        .bounding_box = {
+            0, 0,
+            vgbuf->width, vgbuf->height
+        },
+        .quality = VG_LITE_HIGH,
+        .format = VG_LITE_S32,
+        .uploaded = 0,
+        .path_length = sizeof(path_data),
+        .path = path_data,
+        .path_changed = 1,
+        .pdata_internal = 0
+    };
+    fprintf(stderr, "buf(%ux%u) rect(%d,%d,%d,%d) color(%u,%u,%u,%u)\n",
+        vgbuf->width, vgbuf->height,
+        coords->x1, coords->y1, coords->x2, coords->y2,
+        dsc->bg_color.ch.red, dsc->bg_color.ch.green, dsc->bg_color.ch.blue, dsc->bg_color.ch.alpha
+    );
+    vg_lite_draw(vgbuf, &path, VG_LITE_FILL_NON_ZERO, NULL, VG_LITE_BLEND_SRC_OVER, dsc->bg_color.full);
+    vg_lite_finish();
+    if (dsc->bg_img_src)
+        sw_blit(vgbuf->memory, dsc->bg_img_src, coords);
 }
 
 int main(void)
@@ -206,6 +241,7 @@ int main(void)
         gpu_draw_buffer[i].height = lcd_h;
         gpu_draw_buffer[i].format = VG_LITE_BGRA8888;
         CKE(vg_lite_allocate(&gpu_draw_buffer[i]));
+        vg_lite_clear(&gpu_draw_buffer[i], NULL, 0xff000000);
     }
 
 #if GPU_BLIT
@@ -221,6 +257,7 @@ int main(void)
     static lv_disp_draw_buf_t draw_buf;
     printf("buf1: %p, buf2: %p\n", gpu_draw_buffer[0].memory, gpu_draw_buffer[1].memory);
     lv_disp_draw_buf_init(&draw_buf, gpu_draw_buffer[0].memory, NULL, draw_buf_size / sizeof(lv_color_t));
+    //lv_disp_draw_buf_init(&draw_buf, drm_dev.drm_bufs[0].map, NULL, draw_buf_size / sizeof(lv_color_t));
 
     /*Initialize and register a display driver*/
     static lv_disp_drv_t disp_drv;
@@ -229,12 +266,13 @@ int main(void)
     disp_drv.flush_cb   = drm_flush;
     disp_drv.hor_res    = lcd_w;
     disp_drv.ver_res    = lcd_h;
-    disp_drv.screen_transp = 1;
-    disp_drv.sw_rotate = 1;
-    disp_drv.direct_mode = 0;
+    disp_drv.screen_transp = 0;
+    disp_drv.sw_rotate = 0;
+    disp_drv.direct_mode = 1;
     disp_drv.full_refresh = 0;
-    disp_drv.rotated = LV_DISP_ROT_180;
+    disp_drv.rotated = LV_DISP_ROT_NONE;
     lv_disp_drv_register(&disp_drv);
+    //disp_drv.draw_ctx->draw_rect = vglite_rect;
 
     evdev_init();
     static lv_indev_drv_t indev_drv_1;
@@ -258,11 +296,13 @@ int main(void)
     //printf("lvgl version:%d.%d.%d \n", lv_version_major(), lv_version_minor(), lv_version_patch());
 
     /*Handle LitlevGL tasks (tickless mode)*/
-    while(1) {
+    while(quit) {
         lv_timer_handler();
-        //usleep(1000);
+        usleep(5000);
     }
 
+    vg_lite_free(&gpu_draw_buffer[0]);
+    vg_lite_close();
     return 0;
 
 error:

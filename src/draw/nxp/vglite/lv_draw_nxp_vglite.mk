@@ -10,3 +10,6 @@ DEPPATH += --dep-path $(LVGL_DIR)/$(LVGL_DIR_NAME)/src/draw/nxp/vglite
 VPATH += :$(LVGL_DIR)/$(LVGL_DIR_NAME)/src/draw/nxp/vglite
 
 CFLAGS += "-I$(LVGL_DIR)/$(LVGL_DIR_NAME)/src/draw/nxp/vglite"
+
+%.o: $(LVGL_DIR)/$(LVGL_DIR_NAME)/src/draw/nxp/vglite/%.c
+	@$(CC) $(PROFILE_CFLAGS) $(CFLAGS) -c $< -o $@

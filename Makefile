@@ -19,6 +19,9 @@ bindir ?= $(prefix)/bin
 #Collect the files to compile
 MAINSRC = ./main.c
 
+all: default
+
+#-include profile.mk
 include $(LVGL_DIR)/lvgl.mk
 include $(LVGL_DIR)/lv_drivers/lv_drivers.mk
 
@@ -36,15 +39,16 @@ OBJS = $(AOBJS) $(COBJS)
 
 ## MAINOBJ -> OBJFILES
 
-all: default
+main.o: main.c
+	$(CC) $(PROFILE_CFLAGS) $(CFLAGS) -c $< -o $@
 
 %.o: %.c
-	@$(CC)  $(CFLAGS) -c $< -o $@
+	@$(CC) $(CFLAGS) -c $< -o $@
 	@echo "CC $@"
-    
-default: $(AOBJS) $(COBJS) $(MAINOBJ)
+
+default: $(AOBJS) $(COBJS) $(MAINOBJ) $(PROFILE_OBJS)
 	@echo LD $(BIN)
-	@$(CC) -o $(BIN) $(MAINOBJ) $(AOBJS) $(COBJS) $(LDFLAGS)
+	@$(CC) -o $(BIN) $^ $(LDFLAGS)
 
 clean: 
 	rm -f $(BIN) $(AOBJS) $(COBJS) $(MAINOBJ)

@@ -15,3 +15,6 @@ DEPPATH += --dep-path $(LVGL_DIR)/$(LVGL_DIR_NAME)/src/draw/sw
 VPATH += :$(LVGL_DIR)/$(LVGL_DIR_NAME)/src/draw/sw
 
 CFLAGS += "-I$(LVGL_DIR)/$(LVGL_DIR_NAME)/src/draw/sw"
+
+%.o: $(LVGL_DIR)/$(LVGL_DIR_NAME)/src/draw/sw/%.c
+	@$(CC) $(PROFILE_CFLAGS) $(CFLAGS) -c $< -o $@

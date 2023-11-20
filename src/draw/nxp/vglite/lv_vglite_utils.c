@@ -67,7 +67,7 @@ static inline void invalidate_cache(void);
 
 lv_res_t lv_vglite_run(void)
 {
-    invalidate_cache();
+    //invalidate_cache();
 
     VG_LITE_ERR_RETURN_INV(vg_lite_flush(), "Flush failed.");
 

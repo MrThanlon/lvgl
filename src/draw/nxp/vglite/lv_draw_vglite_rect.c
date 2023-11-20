@@ -121,7 +121,7 @@ lv_res_t lv_gpu_nxp_vglite_draw_bg(const lv_area_t * coords, const lv_area_t * c
     vg_lite_linear_gradient_t gradient;
 
     /*** Init Color/Gradient ***/
-    if(dsc->bg_grad.dir != (lv_grad_dir_t)LV_GRAD_DIR_NONE) {
+    if(0 && (dsc->bg_grad.dir != (lv_grad_dir_t)LV_GRAD_DIR_NONE)) {
         uint32_t colors[2];
         uint32_t stops[2];
         lv_color32_t col32[2];
@@ -161,10 +161,10 @@ lv_res_t lv_gpu_nxp_vglite_draw_bg(const lv_area_t * coords, const lv_area_t * c
         }
     }
 
-    lv_color32_t bg_col32 = {.full = lv_color_to32(dsc->bg_color)}; /*Convert color to RGBA8888*/
-    vg_lite_buffer_format_t color_format = LV_COLOR_DEPTH == 16 ? VG_LITE_BGRA8888 : VG_LITE_ABGR8888;
-    if(lv_vglite_premult_and_swizzle(&vgcol, bg_col32, dsc->bg_opa, color_format) != LV_RES_OK)
-        VG_LITE_RETURN_INV("Premultiplication and swizzle failed.");
+    //lv_color32_t bg_col32 = {.full = lv_color_to32(dsc->bg_color)}; /*Convert color to RGBA8888*/
+    //vg_lite_buffer_format_t color_format = LV_COLOR_DEPTH == 16 ? VG_LITE_BGRA8888 : VG_LITE_ABGR8888;
+    //if(lv_vglite_premult_and_swizzle(&vgcol, bg_col32, dsc->bg_opa, color_format) != LV_RES_OK)
+        //VG_LITE_RETURN_INV("Premultiplication and swizzle failed.");
 
     /*** Draw rectangle ***/
     if(dsc->bg_grad.dir == (lv_grad_dir_t)LV_GRAD_DIR_NONE) {
@@ -175,13 +175,13 @@ lv_res_t lv_gpu_nxp_vglite_draw_bg(const lv_area_t * coords, const lv_area_t * c
     }
     VG_LITE_ERR_RETURN_INV(err, "Draw gradient failed.");
 
-    if(lv_vglite_run() != LV_RES_OK)
-        VG_LITE_RETURN_INV("Run failed.");
+    //if(lv_vglite_run() != LV_RES_OK)
+    //    VG_LITE_RETURN_INV("Run failed.");
 
     err = vg_lite_clear_path(&path);
     VG_LITE_ERR_RETURN_INV(err, "Clear path failed.");
 
-    if(dsc->bg_grad.dir != (lv_grad_dir_t)LV_GRAD_DIR_NONE) {
+    if(0 && (dsc->bg_grad.dir != (lv_grad_dir_t)LV_GRAD_DIR_NONE)) {
         err = vg_lite_clear_grad(&gradient);
         VG_LITE_ERR_RETURN_INV(err, "Clear gradient failed.");
     }

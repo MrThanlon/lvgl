@@ -124,7 +124,7 @@ void lv_draw_vglite_ctx_init(lv_disp_drv_t * drv, lv_draw_ctx_t * draw_ctx)
 
     lv_draw_vglite_ctx_t * vglite_draw_ctx = (lv_draw_sw_ctx_t *)draw_ctx;
     vglite_draw_ctx->base_draw.init_buf = lv_draw_vglite_init_buf;
-    vglite_draw_ctx->base_draw.draw_line = lv_draw_sw_line;
+    vglite_draw_ctx->base_draw.draw_line = lv_draw_vglite_line;
     vglite_draw_ctx->base_draw.draw_arc = lv_draw_vglite_arc;
     vglite_draw_ctx->base_draw.draw_rect = lv_draw_vglite_rect;
     vglite_draw_ctx->base_draw.draw_img_decoded = lv_draw_vglite_img_decoded;
@@ -168,24 +168,10 @@ static void lv_draw_vglite_init_buf(lv_draw_ctx_t * draw_ctx)
     lv_gpu_nxp_vglite_init_buf(draw_ctx->buf, draw_ctx->buf_area, lv_area_get_width(draw_ctx->buf_area));
 }
 
-#define ELAPSED(x) do{\
-    struct timeval tv,tv2;\
-    gettimeofday(&tv,NULL);\
-    x;\
-    gettimeofday(&tv2,NULL);\
-    fprintf(stderr,#x" elapsed %lu us\n",(tv2.tv_sec-tv.tv_sec)*1000000+tv2.tv_usec-tv.tv_usec);\
-    }while(0)
-
 static void lv_draw_vglite_wait_for_finish(lv_draw_ctx_t * draw_ctx)
 {
-    //struct timeval tv, tv2, tv3;
-    //gettimeofday(&tv, NULL);
     //vg_lite_finish();
-    //gettimeofday(&tv2, NULL);
     lv_draw_sw_wait_for_finish(draw_ctx);
-    //gettimeofday(&tv3, NULL);
-    //fprintf(stderr, "wait GPU: %lu\n", tvdelta(tv, tv2));
-    //fprintf(stderr, "wait sw: %lu\n", tvdelta(tv2, tv3));
 }
 
 static void lv_draw_vglite_blend(lv_draw_ctx_t * draw_ctx, const lv_draw_sw_blend_dsc_t * dsc)
@@ -359,14 +345,15 @@ static void lv_draw_vglite_rect(lv_draw_ctx_t * draw_ctx, const lv_draw_rect_dsc
     vglite_dsc.outline_opa = 0;
 #if LV_DRAW_COMPLEX
     /* Draw the shadow with CPU */
-    lv_draw_sw_rect(draw_ctx, &vglite_dsc, coords);
+    //lv_draw_sw_rect(draw_ctx, &vglite_dsc, coords);
     vglite_dsc.shadow_opa = 0;
 #endif /*LV_DRAW_COMPLEX*/
 
     /* Draw the background */
     vglite_dsc.bg_opa = dsc->bg_opa;
-    if(lv_draw_vglite_bg(draw_ctx, &vglite_dsc, coords) != LV_RES_OK)
-        lv_draw_sw_rect(draw_ctx, &vglite_dsc, coords);
+    if(lv_draw_vglite_bg(draw_ctx, &vglite_dsc, coords) != LV_RES_OK) {}
+        //lv_draw_sw_rect(draw_ctx, &vglite_dsc, coords);
+    
     vglite_dsc.bg_opa = 0;
 
     /* Draw the background image
@@ -374,19 +361,21 @@ static void lv_draw_vglite_rect(lv_draw_ctx_t * draw_ctx, const lv_draw_rect_dsc
      * callback gets called from lv_draw_sw_rect().
      */
     vglite_dsc.bg_img_opa = dsc->bg_img_opa;
-    lv_draw_sw_rect(draw_ctx, &vglite_dsc, coords);
+    //lv_draw_sw_rect(draw_ctx, &vglite_dsc, coords);
     vglite_dsc.bg_img_opa = 0;
 
     /* Draw the border */
     vglite_dsc.border_opa = dsc->border_opa;
-    if(lv_draw_vglite_border(draw_ctx, &vglite_dsc, coords) != LV_RES_OK)
-        lv_draw_sw_rect(draw_ctx, &vglite_dsc, coords);
+    if(lv_draw_vglite_border(draw_ctx, &vglite_dsc, coords) != LV_RES_OK) {
+        //lv_draw_sw_rect(draw_ctx, &vglite_dsc, coords);
+    }
     vglite_dsc.border_opa = 0;
 
     /* Draw the outline */
     vglite_dsc.outline_opa = dsc->outline_opa;
-    if(lv_draw_vglite_outline(draw_ctx, &vglite_dsc, coords) != LV_RES_OK)
-        lv_draw_sw_rect(draw_ctx, &vglite_dsc, coords);
+    if(lv_draw_vglite_outline(draw_ctx, &vglite_dsc, coords) != LV_RES_OK) {
+        //lv_draw_sw_rect(draw_ctx, &vglite_dsc, coords);
+    }
 }
 
 static lv_res_t lv_draw_vglite_bg(lv_draw_ctx_t * draw_ctx, const lv_draw_rect_dsc_t * dsc, const lv_area_t * coords)
