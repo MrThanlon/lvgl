@@ -8,6 +8,8 @@
  *********************/
 
 #include "../lv_image_decoder_private.h"
+#include <stdio.h>
+#include <stdlib.h>
 #include "lv_vg_lite_utils.h"
 
 #if LV_USE_DRAW_VG_LITE
@@ -164,7 +166,7 @@ const char * lv_vg_lite_feature_string(vg_lite_feature_t feature)
             FEATURE_ENUM_TO_STRING(YUV_TILED_INPUT);
             FEATURE_ENUM_TO_STRING(AYUV_INPUT);
             FEATURE_ENUM_TO_STRING(16PIXELS_ALIGN);
-            FEATURE_ENUM_TO_STRING(DEC_COMPRESS_2_0);
+            // FEATURE_ENUM_TO_STRING(DEC_COMPRESS_2_0);
         default:
             break;
     }
@@ -348,7 +350,7 @@ void lv_vg_lite_stroke_dump_info(const vg_lite_stroke_t * stroke)
 
     /* Flag that add end_path in driver. */
     LV_LOG_USER("add_end: %d", (int)stroke->add_end);
-    LV_LOG_USER("dash_reset: %d", (int)stroke->dash_reset);
+    // LV_LOG_USER("dash_reset: %d", (int)stroke->dash_reset);
 
     /* Sub path list. */
     LV_LOG_USER("stroke_paths: %p", (void *)stroke->stroke_paths);
@@ -602,6 +604,10 @@ uint32_t lv_vg_lite_width_align(uint32_t w)
     return w;
 }
 
+extern vg_lite_buffer_t gbuf[];
+extern vg_lite_buffer_t memory_pool;
+uint32_t lv_find_buffer(const void* p);
+
 void lv_vg_lite_buffer_init(
     vg_lite_buffer_t * buffer,
     const void * ptr,
@@ -618,6 +624,8 @@ void lv_vg_lite_buffer_init(
     LV_ASSERT_NULL(ptr);
 
     lv_memzero(buffer, sizeof(vg_lite_buffer_t));
+
+    // printf("lv_vg_lite_buffer_init: ptr=%p, width=%d, height=%d, stride=%d, format=%d, tiled=%d\n", ptr, width, height, stride, format, tiled);
 
     buffer->format = format;
     if(tiled || format == VG_LITE_RGBA8888_ETC2_EAC) {
@@ -638,6 +646,14 @@ void lv_vg_lite_buffer_init(
         buffer->stride = stride;
     }
 
+    if (ptr == gbuf[0].memory) {
+        memcpy(buffer, &gbuf[0], sizeof(vg_lite_buffer_t));
+        return;
+    } else if (ptr == gbuf[1].memory) {
+        memcpy(buffer, &gbuf[1], sizeof(vg_lite_buffer_t));
+        return;
+    }
+
     if(format == VG_LITE_NV12) {
         lv_yuv_buf_t * frame_p = (lv_yuv_buf_t *)ptr;
         buffer->memory = (void *)frame_p->semi_planar.y.buf;
@@ -651,7 +667,9 @@ void lv_vg_lite_buffer_init(
     }
     else {
         buffer->memory = (void *)ptr;
-        buffer->address = (uintptr_t)ptr;
+        buffer->address = lv_find_buffer(ptr);
+        if (buffer->address == 0)
+            buffer->address = memory_pool.address + (ptr - memory_pool.memory);
     }
 }
 
@@ -679,7 +697,7 @@ void lv_vg_lite_buffer_from_draw_buf(vg_lite_buffer_t * buffer, const lv_draw_bu
 
     /* Alpha image need to be multiplied by color */
     if(LV_COLOR_FORMAT_IS_ALPHA_ONLY(draw_buf->header.cf)) {
-        buffer->image_mode = VG_LITE_MULTIPLY_IMAGE_MODE;
+        buffer->image_mode = VG_LITE_NORMAL_IMAGE_MODE;
     }
 }
 

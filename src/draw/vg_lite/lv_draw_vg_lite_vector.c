@@ -226,7 +226,7 @@ static void task_draw_cb(void * ctx, const lv_vector_path_t * path, const lv_vec
                     vg_lite_matrix_t pattern_matrix;
                     lv_vg_lite_matrix(&pattern_matrix, &m);
 
-                    vg_lite_color_t recolor = lv_vg_lite_color(dsc->fill_dsc.img_dsc.recolor, dsc->fill_dsc.img_dsc.recolor_opa, true);
+                    // vg_lite_color_t recolor = lv_vg_lite_color(dsc->fill_dsc.img_dsc.recolor, dsc->fill_dsc.img_dsc.recolor_opa, true);
 
                     LV_VG_LITE_ASSERT_MATRIX(&pattern_matrix);
 
@@ -241,7 +241,6 @@ static void task_draw_cb(void * ctx, const lv_vector_path_t * path, const lv_vec
                                                blend,
                                                VG_LITE_PATTERN_COLOR,
                                                vg_color,
-                                               recolor,
                                                VG_LITE_FILTER_BI_LINEAR));
                     LV_PROFILER_END_TAG("vg_lite_draw_pattern");
 

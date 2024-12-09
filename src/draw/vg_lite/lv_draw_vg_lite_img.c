@@ -82,12 +82,12 @@ void lv_draw_vg_lite_img(lv_draw_unit_t * draw_unit, const lv_draw_image_dsc_t *
     vg_lite_color_t color = 0;
     if(LV_COLOR_FORMAT_IS_ALPHA_ONLY(decoder_dsc.decoded->header.cf) || dsc->recolor_opa > LV_OPA_TRANSP) {
         /* alpha image and image recolor */
-        src_buf.image_mode = VG_LITE_MULTIPLY_IMAGE_MODE;
+        src_buf.image_mode = VG_LITE_NORMAL_IMAGE_MODE;
         color = lv_vg_lite_color(dsc->recolor, LV_OPA_MIX2(dsc->opa, dsc->recolor_opa), true);
     }
     else if(dsc->opa < LV_OPA_COVER) {
         /* normal image opa */
-        src_buf.image_mode = VG_LITE_MULTIPLY_IMAGE_MODE;
+        src_buf.image_mode = VG_LITE_NORMAL_IMAGE_MODE;
         lv_memset(&color, dsc->opa, sizeof(color));
     }
 
@@ -170,7 +170,7 @@ void lv_draw_vg_lite_img(lv_draw_unit_t * draw_unit, const lv_draw_image_dsc_t *
                                    &matrix,
                                    lv_vg_lite_blend_mode(dsc->blend_mode),
                                    VG_LITE_PATTERN_COLOR,
-                                   0,
+                                   // 0,
                                    color,
                                    filter));
         LV_PROFILER_END_TAG("vg_lite_draw_pattern");
