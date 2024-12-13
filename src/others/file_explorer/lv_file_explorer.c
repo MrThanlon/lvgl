@@ -25,7 +25,7 @@
 #define quick_access_list_button_style (LV_GLOBAL_DEFAULT()->fe_list_button_style)
 
 #define LV_FILE_NAVIGATION_CURRENT_DIR  "."
-#define LV_FILE_NAVIGATION_PARENT_DIR   ".."
+#define LV_FILE_NAVIGATION_PARENT_DIR   "Back"
 
 /**********************
  *      TYPEDEFS
@@ -35,19 +35,19 @@
  *  STATIC PROTOTYPES
  **********************/
 static void lv_file_explorer_constructor(const lv_obj_class_t * class_p, lv_obj_t * obj);
+static void init_style(lv_obj_t * obj);
 
-static void browser_file_event_handler(lv_event_t * e);
 #if LV_FILE_EXPLORER_QUICK_ACCESS
     static void quick_access_event_handler(lv_event_t * e);
     static void quick_access_area_event_handler(lv_event_t * e);
 #endif
 
-static void init_style(lv_obj_t * obj);
+static void browser_file_event_handler(lv_event_t * e);
 static void show_dir(lv_obj_t * obj, const char * path);
 static void strip_ext(char * dir);
+static void exch_table_item(lv_obj_t * tb, int16_t i, int16_t j);
 static void file_explorer_sort(lv_obj_t * obj);
 static void sort_by_file_kind(lv_obj_t * tb, int16_t lo, int16_t hi);
-static void exch_table_item(lv_obj_t * tb, int16_t i, int16_t j);
 static bool is_end_with(const char * str1, const char * str2);
 
 /**********************
@@ -489,7 +489,6 @@ static void browser_file_event_handler(lv_event_t * e)
         const char * selected_text = NULL;
         uint32_t row;
         uint32_t col;
-        uint8_t navigate_to_current_dir = 0;
         uint8_t navigate_to_parent_dir = 0;
         uint8_t navigate_to_child = 0;
 
@@ -503,11 +502,9 @@ static void browser_file_event_handler(lv_event_t * e)
          * - Navigate to current directory
          * - Navigate to parent directory
          * - Navigate to (current directory) child */
-        navigate_to_current_dir = (lv_strcmp(selected_text, LV_FILE_NAVIGATION_CURRENT_DIR) == 0);
         navigate_to_parent_dir = (lv_strcmp(selected_text, LV_FILE_NAVIGATION_PARENT_DIR) == 0);
         navigate_to_child = !navigate_to_parent_dir;
 
-        if(navigate_to_current_dir)  return; /* Do nothing */
 
         if((navigate_to_parent_dir) && (lv_strlen(explorer->current_path) > 3)) {
             strip_ext(explorer->current_path);
@@ -560,8 +557,7 @@ static void show_dir(lv_obj_t * obj, const char * path)
         return;
     }
 
-    lv_table_set_cell_value_fmt(explorer->file_table, index++, 0, LV_SYMBOL_DIRECTORY "  %s", ".");
-    lv_table_set_cell_value_fmt(explorer->file_table, index++, 0, LV_SYMBOL_DIRECTORY "  %s", "..");
+    lv_table_set_cell_value(explorer->file_table, index++, 0, LV_SYMBOL_LEFT "  " LV_FILE_NAVIGATION_PARENT_DIR);
     lv_table_set_cell_value(explorer->file_table, 0, 1, "0");
     lv_table_set_cell_value(explorer->file_table, 1, 1, "0");
 

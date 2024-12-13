@@ -24,7 +24,6 @@
  *      DEFINES
  *********************/
 
-#define PATH_QUALITY VG_LITE_HIGH
 #define PATH_DATA_COORD_FORMAT VG_LITE_S16
 
 #if LV_VG_LITE_FLUSH_MAX_COUNT > 0
@@ -71,19 +70,20 @@ static void draw_letter_bitmap(lv_draw_vg_lite_unit_t * u, const lv_draw_glyph_d
  *   GLOBAL FUNCTIONS
  **********************/
 
+void lv_draw_vg_lite_label_init(lv_draw_unit_t * draw_unit)
+{
+#if LV_USE_FREETYPE
+    /*Set up the freetype outline event*/
+    lv_freetype_outline_add_event(freetype_outline_event_cb, LV_EVENT_ALL, draw_unit);
+#else
+    LV_UNUSED(draw_unit);
+#endif /* LV_USE_FREETYPE */
+}
+
 void lv_draw_vg_lite_label(lv_draw_unit_t * draw_unit, const lv_draw_label_dsc_t * dsc,
                            const lv_area_t * coords)
 {
     LV_PROFILER_DRAW_BEGIN;
-
-#if LV_USE_FREETYPE
-    static bool is_init = false;
-    if(!is_init) {
-        lv_freetype_outline_add_event(freetype_outline_event_cb, LV_EVENT_ALL, draw_unit);
-        is_init = true;
-    }
-#endif /* LV_USE_FREETYPE */
-
     lv_draw_label_iterate_characters(draw_unit, dsc, coords, draw_letter_cb);
     LV_PROFILER_DRAW_END;
 }
@@ -355,7 +355,6 @@ static void freetype_outline_event_cb(lv_event_t * e)
     switch(code) {
         case LV_EVENT_CREATE:
             param->outline = lv_vg_lite_path_create(PATH_DATA_COORD_FORMAT);
-            lv_vg_lite_path_set_quality(param->outline, PATH_QUALITY);
             break;
         case LV_EVENT_DELETE:
             lv_vg_lite_path_destroy(param->outline);
