@@ -12,6 +12,7 @@
 #include "../core/lv_global.h"
 #include "../misc/lv_math.h"
 #include "../misc/lv_area_private.h"
+#include <vg_lite.h>
 
 /*********************
  *      DEFINES
@@ -677,15 +678,22 @@ static uint32_t width_to_stride(uint32_t w, lv_color_format_t color_format)
     return LV_ROUND_UP(width_byte, LV_DRAW_BUF_STRIDE_ALIGN);
 }
 
+void * vg_allocate_buffer(size_t size);
+
 static void * draw_buf_malloc(const lv_draw_buf_handlers_t * handlers, size_t size_bytes,
                               lv_color_format_t color_format)
 {
+    return vg_allocate_buffer(size_bytes);
     if(handlers->buf_malloc_cb) return handlers->buf_malloc_cb(size_bytes, color_format);
     else return NULL;
 }
 
+void vg_free_buffer(void * p);
+
 static void draw_buf_free(const lv_draw_buf_handlers_t * handlers, void * buf)
 {
+    vg_free_buffer(buf);
+    return;
     if(handlers->buf_free_cb)
         handlers->buf_free_cb(buf);
 }

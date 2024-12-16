@@ -121,12 +121,12 @@ void lv_vg_lite_error_dump_info(vg_lite_error_t error)
 
         case VG_LITE_TIMEOUT:
         case VG_LITE_FLEXA_TIME_OUT: {
-                vg_lite_error_t ret = vg_lite_dump_command_buffer();
-                if(ret != VG_LITE_SUCCESS) {
-                    LV_LOG_ERROR("vg_lite_dump_command_buffer error: %d(%s)",
-                                 (int)ret, lv_vg_lite_error_string(ret));
-                    return;
-                }
+                // vg_lite_error_t ret = vg_lite_dump_command_buffer();
+                // if(ret != VG_LITE_SUCCESS) {
+                //     LV_LOG_ERROR("vg_lite_dump_command_buffer error: %d(%s)",
+                //                  (int)ret, lv_vg_lite_error_string(ret));
+                //     return;
+                // }
 
                 LV_LOG_USER("Command buffer finished");
             }
@@ -671,9 +671,7 @@ uint32_t lv_vg_lite_width_align(uint32_t w)
     return w;
 }
 
-extern vg_lite_buffer_t gbuf[];
-extern vg_lite_buffer_t memory_pool;
-uint32_t lv_find_buffer(const void* p);
+vg_lite_buffer_t* vg_find_buffer(const void* p);
 
 void lv_vg_lite_buffer_init(
     vg_lite_buffer_t * buffer,
@@ -690,9 +688,17 @@ void lv_vg_lite_buffer_init(
     LV_ASSERT_NULL(buffer);
     LV_ASSERT_NULL(ptr);
 
-    lv_memzero(buffer, sizeof(vg_lite_buffer_t));
+    // lv_memzero(buffer, sizeof(vg_lite_buffer_t));
 
     // printf("lv_vg_lite_buffer_init: ptr=%p, width=%d, height=%d, stride=%d, format=%d, tiled=%d\n", ptr, width, height, stride, format, tiled);
+    vg_lite_buffer_t* buf = vg_find_buffer(ptr);
+    if (buf) {
+        memcpy(buffer, buf, sizeof(vg_lite_buffer_t));
+    } else {
+        // not found
+        printf("vg_find_buffer failed\n");
+        exit(1);
+    }
 
     buffer->format = format;
     if(tiled || format == VG_LITE_RGBA8888_ETC2_EAC) {
@@ -713,14 +719,6 @@ void lv_vg_lite_buffer_init(
         buffer->stride = stride;
     }
 
-    if (ptr == gbuf[0].memory) {
-        memcpy(buffer, &gbuf[0], sizeof(vg_lite_buffer_t));
-        return;
-    } else if (ptr == gbuf[1].memory) {
-        memcpy(buffer, &gbuf[1], sizeof(vg_lite_buffer_t));
-        return;
-    }
-
     if(format == VG_LITE_NV12) {
         lv_yuv_buf_t * frame_p = (lv_yuv_buf_t *)ptr;
         buffer->memory = (void *)frame_p->semi_planar.y.buf;
@@ -733,10 +731,8 @@ void lv_vg_lite_buffer_init(
         buffer->yuv.uv_stride = frame_p->semi_planar.uv.stride;
     }
     else {
-        buffer->memory = (void *)ptr;
-        buffer->address = lv_find_buffer(ptr);
-        if (buffer->address == 0)
-            buffer->address = memory_pool.address + (ptr - memory_pool.memory);
+        // buffer->memory = (void *)ptr;
+        // buffer->address = (uintptr_t)ptr;
     }
 }
 

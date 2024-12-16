@@ -12,6 +12,9 @@
 #include "../lv_draw_label_private.h"
 #include "lv_draw_vg_lite.h"
 
+#include <unistd.h>
+#include <vg_lite_util.h>
+
 #include "../../lvgl.h"
 
 #if LV_USE_DRAW_VG_LITE
@@ -194,14 +197,19 @@ static void draw_letter_bitmap(lv_draw_vg_lite_unit_t * u, const lv_draw_glyph_d
         vg_lite_rectangle_t rect;
         lv_vg_lite_rect(&rect, &src_area);
         LV_PROFILER_DRAW_BEGIN_TAG("vg_lite_blit_rect");
+        // vg_lite_save_raw("src.raw", &src_buf);
+        // vg_lite_save_png("src.png", &src_buf);
         LV_VG_LITE_CHECK_ERROR(vg_lite_blit_rect(
                                    &u->target_buffer,
                                    &src_buf,
                                    &rect,
                                    &matrix,
-                                   VG_LITE_BLEND_SRC_OVER,
+                                   VG_LITE_BLEND_SUBTRACT,
                                    color,
                                    VG_LITE_FILTER_LINEAR));
+        // vg_lite_finish();
+        // vg_lite_save_png("dst.png", &u->target_buffer);
+        // usleep(100000);
         LV_PROFILER_DRAW_END_TAG("vg_lite_blit_rect");
     }
     else {
